@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <item
+        android:icon="@drawable/ic_chat_bubble_black_24dp"
+        android:title="@string/action_chats" />
+
+    <item
+        android:icon="@drawable/ic_timeline_black_24dp"
+        android:title="@string/action_timeline" />
+
+    <item
+        android:id="@+id/empty"
+        android:enabled="false"
+        tools:ignore="MenuTitle" />
+
+    <item
+        android:icon="@drawable/ic_star_black_24dp"
+        android:title="@string/action_favourite" />
+
+    <item
+        android:icon="@drawable/ic_person_black_24dp"
+        android:title="@string/action_contacts" />
+
+</menu>
