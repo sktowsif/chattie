@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.lifecycle.Observer
 import com.project.chattie.R
 import com.project.chattie.base.BaseActivity
-import com.project.chattie.dashboard.DashboardActivity
+import com.project.chattie.ui.dashboard.DashboardActivity
 import com.project.chattie.data.Outcome
 import com.project.chattie.data.User
 import com.project.chattie.ext.addFragment
@@ -35,7 +35,7 @@ class LoginActivity : BaseActivity(), LoginFragment.OnUserSelectedListener {
         if (SessionManager.isLoggedIn(this)) jumpToDashboard()
 
         setContentView(R.layout.common_container)
-        loginViewModel.getUsers().observe(this, userObserver)
+        loginViewModel.allUsers.observe(this, userObserver)
 
         if (savedInstanceState == null) {
             addFragment(R.id.container, LoginFragment::class.java)

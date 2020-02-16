@@ -5,8 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="@dimen/_13sdp"
+    android:layout_marginTop="@dimen/_10sdp"
     android:layout_marginEnd="@dimen/_13sdp"
-    android:layout_marginBottom="@dimen/_5sdp"
+    android:layout_marginBottom="@dimen/_10sdp"
     android:background="?selectableItemBackground"
     android:orientation="horizontal"
     app:layout_goneMarginBottom="@dimen/_5sdp">
@@ -24,7 +25,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_marginStart="@dimen/_10sdp"
-        android:textSize="@dimen/_14ssp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
         tools:text="@tools:sample/full_names" />
 
 </LinearLayout>

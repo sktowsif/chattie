@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Chattie</string>
 
+    <string name="title_select_contacts">Select contact</string>
     <string name="title_chats">Chats</string>
 
     <string name="action_search">Search</string>
@@ -16,6 +17,11 @@
     <string name="hint_phone_number">Phone number</string>
 
     <string name="login_as">Login as</string>
+
+    <plurals name="pl_contacts">
+        <item quantity="one">%d contact</item>
+        <item quantity="other">%d contacts</item>
+    </plurals>
 
     <string name="err_something_wrong">Something went wrong</string>
 

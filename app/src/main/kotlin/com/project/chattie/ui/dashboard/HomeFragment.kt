@@ -1,4 +1,4 @@
-package com.project.chattie.dashboard
+package com.project.chattie.ui.dashboard
 
 import android.os.Bundle
 import android.view.LayoutInflater

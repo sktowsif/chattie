@@ -1,11 +1,14 @@
-package com.project.chattie.dashboard
+package com.project.chattie.ui.dashboard
 
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import com.project.chattie.R
+import com.project.chattie.services.StatusWorker
+import com.project.chattie.ui.contacts.ContactsActivity
 import kotlinx.android.synthetic.main.activity_main.*
+import org.jetbrains.anko.startActivity
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -13,6 +16,8 @@ class DashboardActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        fabSelectContact.setOnClickListener { startActivity<ContactsActivity>() }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

@@ -34,7 +34,7 @@ class LoginFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        loginViewModel.getUsers().observe(viewLifecycleOwner, userObserver)
+        loginViewModel.allUsers.observe(viewLifecycleOwner, userObserver)
     }
 
     override fun onCreateView(

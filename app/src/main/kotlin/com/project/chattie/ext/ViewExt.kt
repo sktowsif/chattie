@@ -1,8 +1,10 @@
 package com.project.chattie.ext
 
+import android.text.SpannedString
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.annotation.LayoutRes
 
 inline fun View.show() {
@@ -19,3 +21,7 @@ inline fun View.gone() {
 
 inline fun <T : View> ViewGroup.inflate(@LayoutRes layoutResId: Int) =
     LayoutInflater.from(context).inflate(layoutResId, this, false) as T
+
+inline fun TextView.setSpannedText(text: SpannedString) {
+    setText(text, TextView.BufferType.SPANNABLE)
+}
