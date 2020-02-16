@@ -9,4 +9,14 @@
     <string name="action_timeline">Timeline</string>
     <string name="action_favourite">Favourite</string>
     <string name="action_contacts">Contacts</string>
+
+    <string name="action_register">Register</string>
+
+    <string name="hint_username">Username</string>
+    <string name="hint_phone_number">Phone number</string>
+
+    <string name="login_as">Login as</string>
+
+    <string name="err_missing_users">Missing hardcoded users</string>
+
 </resources>
