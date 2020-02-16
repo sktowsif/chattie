@@ -24,6 +24,7 @@ class LoginViewModel(private val database: FirebaseDatabase) : ViewModel() {
 
     private fun initUser() {
         viewModelScope.launch {
+            _users.loading()
             val userRef = database.users()
             // Check if the database is empty
             if (userRef.readList<User>().isEmpty()) initializeUsers(userRef)
@@ -32,7 +33,6 @@ class LoginViewModel(private val database: FirebaseDatabase) : ViewModel() {
     }
 
     private suspend fun fetchUsers(userRef: DatabaseReference) {
-        _users.loading()
         try {
             val result = withContext(Dispatchers.IO) { userRef.readList<User>() }
             _users.success(result)

@@ -12,6 +12,7 @@ import com.project.chattie.ext.gone
 import com.project.chattie.ext.show
 import kotlinx.android.synthetic.main.common_container.*
 import org.jetbrains.anko.startActivity
+import org.jetbrains.anko.toast
 import org.koin.androidx.fragment.android.setupKoinFragmentFactory
 import org.koin.androidx.scope.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -47,7 +48,7 @@ class LoginActivity : BaseActivity(), LoginFragment.OnUserSelectedListener {
     }
 
     override fun handleError(ex: Throwable) {
-
+        toast(R.string.err_something_wrong)
     }
 
     override fun onUserSelected(user: User) {

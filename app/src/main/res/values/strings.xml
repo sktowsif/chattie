@@ -17,6 +17,6 @@
 
     <string name="login_as">Login as</string>
 
-    <string name="err_missing_users">Missing hardcoded users</string>
+    <string name="err_something_wrong">Something went wrong</string>
 
 </resources>

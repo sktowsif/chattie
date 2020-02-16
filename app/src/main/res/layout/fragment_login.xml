@@ -28,44 +28,7 @@
         android:id="@+id/userDetailContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?selectableItemBackground"
-            android:drawableStart="@drawable/ic_account_circle_grey_500_48dp"
-            android:drawablePadding="@dimen/_10sdp"
-            android:gravity="center_vertical"
-            android:paddingTop="@dimen/_5sdp"
-            android:paddingBottom="@dimen/_5sdp"
-            android:textSize="@dimen/_14ssp"
-            tools:text="@tools:sample/full_names" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?selectableItemBackground"
-            android:drawableStart="@drawable/ic_account_circle_grey_500_48dp"
-            android:drawablePadding="@dimen/_10sdp"
-            android:gravity="center_vertical"
-            android:paddingTop="@dimen/_5sdp"
-            android:paddingBottom="@dimen/_5sdp"
-            android:textSize="@dimen/_14ssp"
-            tools:text="@tools:sample/full_names" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?selectableItemBackground"
-            android:drawableStart="@drawable/ic_account_circle_grey_500_48dp"
-            android:drawablePadding="@dimen/_10sdp"
-            android:gravity="center_vertical"
-            android:paddingTop="@dimen/_5sdp"
-            android:paddingBottom="@dimen/_5sdp"
-            android:textSize="@dimen/_14ssp"
-            tools:text="@tools:sample/full_names" />
-
-    </LinearLayout>
+        android:animateLayoutChanges="true"
+        android:orientation="vertical" />
 
 </LinearLayout>
