@@ -15,6 +15,7 @@
 
     <string name="hint_username">Username</string>
     <string name="hint_phone_number">Phone number</string>
+    <string name="hint_type_message">Type message to send</string>
 
     <string name="login_as">Login as</string>
 

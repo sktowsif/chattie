@@ -47,7 +47,7 @@ class UserRepository(
         }
     }
 
-    override suspend fun getUser(uid: String): User = userRef.readValue()
+    override suspend fun getUser(uid: String): User = userRef.child(uid).readValue()
 
     /**
      * Since the requirement was to have three hardcoded users as John Doe, Jane Doe and Admin.

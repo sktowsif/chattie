@@ -6,11 +6,14 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.buildSpannedString
 import androidx.lifecycle.Observer
+import coil.api.load
+import coil.transform.CircleCropTransformation
 import com.project.chattie.R
 import com.project.chattie.data.Outcome
 import com.project.chattie.data.User
 import com.project.chattie.ext.setSpannedText
 import com.project.chattie.ext.show
+import kotlinx.android.synthetic.main.common_appbar.*
 import org.jetbrains.anko.find
 import org.jetbrains.anko.intentFor
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -25,13 +28,19 @@ class MessageActivity : AppCompatActivity() {
             context.intentFor<MessageActivity>(EXTRA_USER_UID to user.uid)
     }
 
-    private lateinit var toolbarTitle: TextView
-
     private val messageViewModel by viewModel<MessageViewModel>()
 
     private val connectedContactObserver = Observer<Outcome<User>> {
         if (it is Outcome.Success) {
-            toolbarTitle.setSpannedText(buildSpannedString {
+            customToolbarImg.show()
+            customToolbarImg.load(it.data.imageUrl) {
+                placeholder(R.drawable.ic_account_circle_grey_500_48dp)
+                error(R.drawable.ic_account_circle_grey_500_48dp)
+                transformations(CircleCropTransformation())
+            }
+
+            customToolbarTitle.show()
+            customToolbarTitle.setSpannedText(buildSpannedString {
                 append(it.data.name)
             })
         }
@@ -46,10 +55,7 @@ class MessageActivity : AppCompatActivity() {
         setSupportActionBar(find(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        toolbarTitle = find(R.id.customToolbarTitle)
-        toolbarTitle.show()
-
-        messageViewModel.connectedContact.observe(this,connectedContactObserver)
+        messageViewModel.connectedContact.observe(this, connectedContactObserver)
         messageViewModel.fetchContact(uid)
 
     }
