@@ -6,6 +6,8 @@ import com.project.chattie.data.UserRepository
 import com.project.chattie.ui.contacts.ContactsActivity
 import com.project.chattie.ui.contacts.ContactsFragment
 import com.project.chattie.ui.contacts.ContactsViewModel
+import com.project.chattie.ui.dashboard.DashboardActivity
+import com.project.chattie.ui.dashboard.HomeFragment
 import com.project.chattie.ui.login.LoginActivity
 import com.project.chattie.ui.login.LoginFragment
 import com.project.chattie.ui.login.LoginViewModel
@@ -28,6 +30,10 @@ val uiModule = module {
     viewModel { LoginViewModel(get()) }
     scope<LoginActivity> {
         scoped { LoginFragment() }
+    }
+
+    scope<DashboardActivity> {
+        scoped { HomeFragment() }
     }
 
     viewModel { ContactsViewModel(get()) }

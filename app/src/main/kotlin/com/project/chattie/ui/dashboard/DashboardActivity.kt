@@ -5,17 +5,25 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import com.project.chattie.R
+import com.project.chattie.ext.addFragment
 import com.project.chattie.services.StatusWorker
 import com.project.chattie.ui.contacts.ContactsActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.startActivity
+import org.koin.androidx.fragment.android.setupKoinFragmentFactory
+import org.koin.androidx.scope.lifecycleScope
 
 class DashboardActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setupKoinFragmentFactory(lifecycleScope)
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+        supportActionBar?.setTitle(R.string.action_chats)
+
+        if (savedInstanceState == null) addFragment(R.id.main_container, HomeFragment::class.java)
 
         fabSelectContact.setOnClickListener { startActivity<ContactsActivity>() }
     }
