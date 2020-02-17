@@ -9,9 +9,7 @@ import com.project.chattie.ui.contacts.ContactsViewModel
 import com.project.chattie.ui.login.LoginActivity
 import com.project.chattie.ui.login.LoginFragment
 import com.project.chattie.ui.login.LoginViewModel
-import com.project.chattie.ui.message.MessageDataSource
-import com.project.chattie.ui.message.MessageRepository
-import com.project.chattie.ui.message.MessageViewModel
+import com.project.chattie.ui.message.*
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -22,7 +20,7 @@ val firebaseModule = module {
 
 val dataSourceModule = module {
     single { UserRepository(get(), get()) } bind UserDataSource::class
-    single { MessageRepository(get()) } bind MessageDataSource::class
+    single { MessageRepository(get(), get()) } bind MessageDataSource::class
 }
 
 val uiModule = module {
@@ -37,5 +35,8 @@ val uiModule = module {
         scoped { ContactsFragment() }
     }
 
-    viewModel { MessageViewModel(get(), get()) }
+    viewModel { MessageViewModel(get(), get(), get()) }
+    scope<MessageActivity> {
+        scoped { MessageFragment() }
+    }
 }

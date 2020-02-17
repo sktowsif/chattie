@@ -2,7 +2,7 @@ package com.project.chattie.ui.message
 
 import android.content.Context
 import android.os.Bundle
-import android.widget.TextView
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.buildSpannedString
 import androidx.lifecycle.Observer
@@ -11,12 +11,15 @@ import coil.transform.CircleCropTransformation
 import com.project.chattie.R
 import com.project.chattie.data.Outcome
 import com.project.chattie.data.User
+import com.project.chattie.ext.addFragment
 import com.project.chattie.ext.setSpannedText
 import com.project.chattie.ext.show
 import com.project.chattie.ui.login.SessionManager
 import kotlinx.android.synthetic.main.common_appbar.*
 import org.jetbrains.anko.find
 import org.jetbrains.anko.intentFor
+import org.koin.androidx.fragment.android.setupKoinFragmentFactory
+import org.koin.androidx.scope.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MessageActivity : AppCompatActivity() {
@@ -31,7 +34,7 @@ class MessageActivity : AppCompatActivity() {
 
     private val messageViewModel by viewModel<MessageViewModel>()
 
-    private val connectedContactObserver = Observer<Outcome<User>> {
+    private val receiverContactObserver = Observer<Outcome<User>> {
         if (it is Outcome.Success) {
             customToolbarImg.show()
             customToolbarImg.load(it.data.imageUrl) {
@@ -48,24 +51,34 @@ class MessageActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setupKoinFragmentFactory(lifecycleScope)
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.common_container_with_appbar)
+        setSupportActionBar(find(R.id.toolbar))
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        val uid = SessionManager.getUserUid(this)
-        val connectedToUid = intent.getStringExtra(EXTRA_USER_UID)!!
-
-        val chatId = createChatId(uid, connectedToUid)
+        //val senderId = SessionManager.getUserUid(this)
+        val receiverId = intent.getStringExtra(EXTRA_USER_UID)!!
 
         setSupportActionBar(find(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        messageViewModel.connectedContact.observe(this, connectedContactObserver)
-        messageViewModel.fetchContact(connectedToUid)
+        if (savedInstanceState == null) addFragment(R.id.container, MessageFragment::class.java)
 
-        messageViewModel.fetchConversation(chatId)
+        messageViewModel.receiverContactDetail.observe(this, receiverContactObserver)
+        messageViewModel.fetchContact(receiverId)
+        messageViewModel.findConversation(receiverId)
 
     }
 
-    private fun createChatId(senderId: String, receiverId: String): String =
-        if (senderId > receiverId) senderId + receiverId else receiverId + senderId
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                onBackPressed()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
 }

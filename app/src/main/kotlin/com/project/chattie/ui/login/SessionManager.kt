@@ -14,12 +14,17 @@ object SessionManager {
     private const val PREF_USER_UID = "prefKeyUserUid"
     private const val PREF_IS_LOGGED_IN = "prefKeyIsLoggedIn"
     private const val PREF_USER_ROLE = "prefKeyUserRole"
+    private const val PREF_USER_NAME = "prefKeyUsername"
+    private const val PREF_USER_AVATAR = "prefKeyUserAvatar"
 
     fun setLoggedUser(context: Context, user: User) {
         context.putPrefs(PREFERENCE, PREF_USER_UID, user.uid)
         context.putPrefs(PREFERENCE, PREF_USER_ROLE, user.role)
+        context.putPrefs(PREFERENCE, PREF_USER_NAME, user.name)
         context.putPrefs(PREFERENCE, PREF_IS_LOGGED_IN, true)
     }
+
+    fun getUsername(context: Context) = context.getPrefs(PREFERENCE, PREF_USER_NAME, "")
 
     fun getUserUid(context: Context) = context.getPrefs(PREFERENCE, PREF_USER_UID, "")
 
