@@ -8,6 +8,8 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import coil.api.load
+import coil.transform.CircleCropTransformation
 import com.project.chattie.R
 import com.project.chattie.data.Outcome
 import com.project.chattie.data.User
@@ -62,7 +64,12 @@ class LoginFragment : Fragment() {
         val convertView = container.inflate<LinearLayout>(R.layout.item_user)
         convertView.username.text = user.name
         // TODO : Update profile image
-        convertView.avatar.setImageResource(R.drawable.ic_account_circle_grey_500_48dp)
+        convertView.avatar.load(user.imageUrl) {
+            placeholder(R.drawable.ic_account_circle_grey_500_48dp)
+            error(R.drawable.ic_account_circle_grey_500_48dp)
+            transformations(CircleCropTransformation())
+        }
+
         convertView.setOnClickListener { listener?.onUserSelected(user) }
         return convertView
     }

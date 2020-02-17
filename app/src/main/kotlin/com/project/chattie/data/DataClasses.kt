@@ -1,6 +1,7 @@
 package com.project.chattie.data
 
 import com.google.firebase.database.IgnoreExtraProperties
+import java.util.*
 
 enum class Role {
 
@@ -23,3 +24,9 @@ data class User(
 
     }
 }
+
+data class Message(
+    var id: String? = "",
+    var message: String? = "",
+    var timestamp: Long? = Date().time
+)

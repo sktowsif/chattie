@@ -13,6 +13,7 @@ import com.project.chattie.data.Outcome
 import com.project.chattie.data.User
 import com.project.chattie.ext.setSpannedText
 import com.project.chattie.ext.show
+import com.project.chattie.ui.login.SessionManager
 import kotlinx.android.synthetic.main.common_appbar.*
 import org.jetbrains.anko.find
 import org.jetbrains.anko.intentFor
@@ -50,13 +51,21 @@ class MessageActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.common_container_with_appbar)
 
-        val uid = intent.getStringExtra(EXTRA_USER_UID)
+        val uid = SessionManager.getUserUid(this)
+        val connectedToUid = intent.getStringExtra(EXTRA_USER_UID)!!
+
+        val chatId = createChatId(uid, connectedToUid)
 
         setSupportActionBar(find(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         messageViewModel.connectedContact.observe(this, connectedContactObserver)
-        messageViewModel.fetchContact(uid)
+        messageViewModel.fetchContact(connectedToUid)
+
+        messageViewModel.fetchConversation(chatId)
 
     }
+
+    private fun createChatId(senderId: String, receiverId: String): String =
+        if (senderId > receiverId) senderId + receiverId else receiverId + senderId
 }
