@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.buildSpannedString
+import androidx.core.text.scale
 import androidx.lifecycle.Observer
 import coil.api.load
 import coil.transform.CircleCropTransformation
@@ -14,6 +15,7 @@ import com.project.chattie.data.User
 import com.project.chattie.ext.addFragment
 import com.project.chattie.ext.setSpannedText
 import com.project.chattie.ext.show
+import com.project.chattie.ext.toPattern
 import com.project.chattie.ui.login.SessionManager
 import kotlinx.android.synthetic.main.common_appbar.*
 import org.jetbrains.anko.find
@@ -50,12 +52,18 @@ class MessageActivity : AppCompatActivity() {
                 error(R.drawable.ic_account_circle_grey_500_48dp)
                 transformations(CircleCropTransformation())
             }
-
-            customToolbarTitle.show()
-            customToolbarTitle.setSpannedText(buildSpannedString {
-                append(it.data.name)
-            })
         }
+    }
+
+    private val statusChangeObserver = Observer<Triple<String, Boolean, Long>> {
+        customToolbarTitle.show()
+        customToolbarTitle.setSpannedText(buildSpannedString {
+            append(it.first)
+            scale(0.5F) {
+                if (it.second) append("\n${getString(R.string.online)}")
+                else if (it.third > 0) append("\n${it.third.toPattern("hh:mm aa")}")
+            }
+        })
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,13 +76,14 @@ class MessageActivity : AppCompatActivity() {
 
         if (savedInstanceState == null) addFragment(R.id.container, MessageFragment::class.java)
         messageViewModel.receiverContactDetail.observe(this, receiverContactObserver)
+        messageViewModel.statusChange.observe(this, statusChangeObserver)
 
         val connectedUid = intent.getStringExtra(EXTRA_CONNECTED_UID)!!
         messageViewModel.fetchReceiverContactDetail(connectedUid)
 
         val chatId = intent.getStringExtra(EXTRA_CHAT_UID)
         if (chatId.isNullOrEmpty()) messageViewModel.findConversation(connectedUid)
-        else messageViewModel.attachMessageNodeListener(chatId)
+        else messageViewModel.attachMessageNodeListener(chatId, connectedUid)
 
     }
 

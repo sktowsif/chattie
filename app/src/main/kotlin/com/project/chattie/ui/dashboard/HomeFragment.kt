@@ -35,6 +35,11 @@ class HomeFragment : Fragment() {
         TabLayoutMediator(homeTabs, homePager) { tab, position ->
             tab.text = getString(tabs[position].labelResId)
         }.attach()
+
+        // For demo purpose only
+        val badge = homeTabs.getTabAt(1)?.orCreateBadge
+        badge?.isVisible = true
+        badge?.number = 120
     }
 
     private class ChatPagerAdapter(fragment: Fragment, private val tabs: List<Tab>) :

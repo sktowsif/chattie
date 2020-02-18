@@ -4,10 +4,7 @@ import android.app.Application
 import android.graphics.Paint
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.google.firebase.database.ChildEventListener
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import com.project.chattie.data.Member
 import com.project.chattie.data.Message
 import com.project.chattie.data.User
@@ -15,7 +12,6 @@ import com.project.chattie.ext.*
 import com.project.chattie.ui.login.SessionManager
 import kotlinx.coroutines.tasks.await
 import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.debug
 import org.jetbrains.anko.info
 import org.jetbrains.anko.warn
 
@@ -25,13 +21,15 @@ interface MessageDataSource {
 
     suspend fun sendMessage(receiverName: String, receiverId: String, message: Message)
 
-    fun attachMessageListener()
+    fun attachMessageListener(uid: String)
 
-    fun removeMessageListener()
+    fun removeMessageListener(uid: String)
 
     fun setConversationId(chatId: String)
 
     fun messageChannel(): LiveData<Pair<Message.Action, Any>>
+
+    fun statusChangeChannel(): LiveData<Triple<String, Boolean, Long>>
 }
 
 class MessageRepository(
@@ -39,12 +37,12 @@ class MessageRepository(
     private val database: FirebaseDatabase
 ) : MessageDataSource, AnkoLogger {
 
-    private var isListenerAttached = false
     private lateinit var chatId: String
+    private var isListenerAttached = false
 
     private val messageNode = MutableLiveData<Pair<Message.Action, Any>>()
 
-    override fun messageChannel(): LiveData<Pair<Message.Action, Any>> = messageNode
+    private val statusChangeNode = MutableLiveData<Triple<String, Boolean, Long>>()
 
     private val messageChildEventListener = object : ChildEventListener {
         override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
@@ -53,7 +51,7 @@ class MessageRepository(
             val newMessage = snapshot.getValue(Message::class.java)!!
             if (newMessage.senderId == senderId) newMessage.align = Paint.Align.RIGHT
             else newMessage.align = Paint.Align.LEFT
-            messageNode.value = Message.Action.ADD to newMessage!!
+            messageNode.value = Message.Action.ADD to newMessage
         }
 
         override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
@@ -75,6 +73,21 @@ class MessageRepository(
             warn { error.toException().printStackTrace() }
         }
     }
+
+    private val statusChangeListener = object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            val user = snapshot.getValue(User::class.java)!!
+            statusChangeNode.value = Triple(user.name ?: "", user.active, user.lastSeen)
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            warn { error.toException().printStackTrace() }
+        }
+    }
+
+    override fun statusChangeChannel(): LiveData<Triple<String, Boolean, Long>> = statusChangeNode
+
+    override fun messageChannel(): LiveData<Pair<Message.Action, Any>> = messageNode
 
     override fun setConversationId(chatId: String) {
         this.chatId = chatId
@@ -102,21 +115,30 @@ class MessageRepository(
     private fun createQueryParam(senderId: String, receiverId: String) =
         if (senderId > receiverId) senderId + receiverId else receiverId + senderId
 
-    override fun attachMessageListener() {
+    override fun attachMessageListener(uid: String) {
         // Taking extra care of adding listener only once
         warn { "Trying to attach listener..." }
         if (!isListenerAttached) {
-            debug { "Message node listener attached successfully" }
+            info { "Message node listener attached successfully" }
+            // Attach listener to look for any change in message node
             database.messages(chatId).addChildEventListener(messageChildEventListener)
+            // Attach listener to connected user to look for status change
+            database.users(uid).addValueEventListener(statusChangeListener)
             isListenerAttached = true
         }
     }
 
-    override fun removeMessageListener() {
+    override fun removeMessageListener(uid: String) {
         warn { "Trying to remove listener..." }
         if (isListenerAttached) {
-            debug { "Message node listener removed successfully" }
+            info { "Message node listener removed successfully" }
+            // Clean channel data
+            messageNode.value = null
+            statusChangeNode.value = null
+            // Remove message node listener
             database.messages(chatId).removeEventListener(messageChildEventListener)
+            database.users(uid).removeEventListener(statusChangeListener)
+
             isListenerAttached = false
         }
     }

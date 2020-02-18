@@ -48,12 +48,9 @@ class StatusWorker(context: Context, params: WorkerParameters) : CoroutineWorker
             val userRef = database.users()
 
             withContext(Dispatchers.IO) {
-                userRef.child(uid).setValue(
-                    mapOf(
-                        User.IS_ACTIVE to status,
-                        User.LAST_SEEN to Date().time
-                    )
-                ).await()
+                val updates = if (status) mapOf(User.IS_ACTIVE to status)
+                else mapOf(User.IS_ACTIVE to status, User.LAST_SEEN to Date().time)
+                userRef.child(uid).updateChildren(updates).await()
             }
 
             Result.success()

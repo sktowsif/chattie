@@ -60,15 +60,17 @@ class MessageViewModel(
                 messageRepo.findConversationId(_senderId, receiverId)
                 // Add listener of observe any changes in message node,
                 // so that we can easily update the UI with new message.
-                messageRepo.attachMessageListener()
+                messageRepo.attachMessageListener(receiverId)
             }
         }
     }
 
-    fun attachMessageNodeListener(chatId: String) {
+    fun attachMessageNodeListener(chatId: String, receiverId: String) {
         messageRepo.setConversationId(chatId)
-        messageRepo.attachMessageListener()
+        messageRepo.attachMessageListener(receiverId)
     }
+
+    val statusChange = messageRepo.statusChangeChannel()
 
     val newMessage = messageRepo.messageChannel()
 
@@ -97,7 +99,7 @@ class MessageViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        messageRepo.removeMessageListener()
+        messageRepo.removeMessageListener(_receiverId.value!!)
     }
 
 

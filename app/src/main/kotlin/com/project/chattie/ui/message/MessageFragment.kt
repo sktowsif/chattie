@@ -22,7 +22,9 @@ class MessageFragment : Fragment() {
     private val messageViewModel: MessageViewModel by sharedViewModel()
 
     private val newMessageObserver = Observer<Pair<Message.Action, Any>> {
-        if (it.first == Message.Action.ADD) getAdapter().addMessage(it.second as Message)
+        if (it != null) {
+            if (it.first == Message.Action.ADD) getAdapter().addMessage(it.second as Message)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

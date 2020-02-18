@@ -8,6 +8,9 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import com.project.chattie.di.dataSourceModule
 import com.project.chattie.di.firebaseModule
 import com.project.chattie.di.uiModule
+import com.project.chattie.ext.workManager
+import com.project.chattie.services.StatusWorker
+import com.project.chattie.ui.login.SessionManager
 import org.jetbrains.anko.toast
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -34,6 +37,8 @@ class ChattieApplicaiton : Application(), Application.ActivityLifecycleCallbacks
     override fun onActivityStarted(activity: Activity) {
         if (totalActiveActivities == 0) {
             toast("App in foreground")
+            if (SessionManager.isLoggedIn(this))
+                StatusWorker.enqueue(this, true)
         }
         totalActiveActivities++
     }
@@ -42,6 +47,8 @@ class ChattieApplicaiton : Application(), Application.ActivityLifecycleCallbacks
         totalActiveActivities--
         if (totalActiveActivities == 0) {
             toast("App in background")
+            if (SessionManager.isLoggedIn(this))
+                StatusWorker.enqueue(this, false)
         }
     }
 

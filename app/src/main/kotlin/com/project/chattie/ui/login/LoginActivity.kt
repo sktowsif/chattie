@@ -10,6 +10,7 @@ import com.project.chattie.data.User
 import com.project.chattie.ext.addFragment
 import com.project.chattie.ext.gone
 import com.project.chattie.ext.show
+import com.project.chattie.services.StatusWorker
 import kotlinx.android.synthetic.main.common_container.*
 import org.jetbrains.anko.startActivity
 import org.jetbrains.anko.toast
@@ -57,6 +58,7 @@ class LoginActivity : BaseActivity(), LoginFragment.OnUserSelectedListener {
     }
 
     private fun jumpToDashboard() {
+        StatusWorker.enqueue(this, true)
         startActivity<DashboardActivity>()
         finish()
     }
