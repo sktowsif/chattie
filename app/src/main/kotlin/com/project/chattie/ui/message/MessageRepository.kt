@@ -5,6 +5,7 @@ import android.graphics.Paint
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.database.*
+import com.project.chattie.data.Action
 import com.project.chattie.data.Member
 import com.project.chattie.data.Message
 import com.project.chattie.data.User
@@ -27,7 +28,7 @@ interface MessageDataSource {
 
     fun setConversationId(chatId: String)
 
-    fun messageChannel(): LiveData<Pair<Message.Action, Any>>
+    fun messageChannel(): LiveData<Pair<Action, Any>>
 
     fun statusChangeChannel(): LiveData<Triple<String, Boolean, Long>>
 }
@@ -40,7 +41,7 @@ class MessageRepository(
     private lateinit var chatId: String
     private var isListenerAttached = false
 
-    private val messageNode = MutableLiveData<Pair<Message.Action, Any>>()
+    private val messageNode = MutableLiveData<Pair<Action, Any>>()
 
     private val statusChangeNode = MutableLiveData<Triple<String, Boolean, Long>>()
 
@@ -51,7 +52,7 @@ class MessageRepository(
             val newMessage = snapshot.getValue(Message::class.java)!!
             if (newMessage.senderId == senderId) newMessage.align = Paint.Align.RIGHT
             else newMessage.align = Paint.Align.LEFT
-            messageNode.value = Message.Action.ADD to newMessage
+            messageNode.value = Action.ADD to newMessage
         }
 
         override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
@@ -87,7 +88,7 @@ class MessageRepository(
 
     override fun statusChangeChannel(): LiveData<Triple<String, Boolean, Long>> = statusChangeNode
 
-    override fun messageChannel(): LiveData<Pair<Message.Action, Any>> = messageNode
+    override fun messageChannel(): LiveData<Pair<Action, Any>> = messageNode
 
     override fun setConversationId(chatId: String) {
         this.chatId = chatId

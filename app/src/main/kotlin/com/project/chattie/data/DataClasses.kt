@@ -69,9 +69,8 @@ data class Message(
     @set:Exclude
     @get:Exclude
     var align: Paint.Align = Paint.Align.LEFT
+}
 
-    enum class Action {
-        ADD, DELETE, CHANGE, ERROR
-    }
-
+enum class Action {
+    ADD, DELETE, CHANGE, ERROR
 }

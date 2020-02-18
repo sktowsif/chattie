@@ -12,15 +12,24 @@ import kotlinx.coroutines.Dispatchers
 
 class DashboardViewModel(private val chatRepo: ChatDataSource) : ViewModel() {
 
-    val chats =
-        liveData<Outcome<List<Chat>>>(context = viewModelScope.coroutineContext + Dispatchers.IO) {
-            emitLoading()
-            try {
-                emitSuccess(chatRepo.getChats())
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-                emitFailure(ex)
-            }
-        }
+//    val chats =
+//        liveData<Outcome<List<Chat>>>(context = viewModelScope.coroutineContext + Dispatchers.IO) {
+//            emitLoading()
+//            try {
+//                emitSuccess(chatRepo.getChats())
+//            } catch (ex: Exception) {
+//                ex.printStackTrace()
+//                emitFailure(ex)
+//            }
+//        }
+
+    init {
+        chatRepo.attachChatNodeListener()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        chatRepo.removeChatNodeListener()
+    }
 
 }
