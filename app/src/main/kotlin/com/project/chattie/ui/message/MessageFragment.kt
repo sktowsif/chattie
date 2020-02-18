@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.project.chattie.R
 import com.project.chattie.data.Message
-import com.project.chattie.data.Outcome
 import com.project.chattie.ext.inflate
 import com.project.chattie.ext.toPattern
 import kotlinx.android.synthetic.main.fragment_message.*
@@ -24,17 +23,12 @@ class MessageFragment : Fragment() {
 
     private val messageViewModel: MessageViewModel by sharedViewModel()
 
-    private val messageHistoryObserver = Observer<Outcome<List<Message>>> {
-        if (it is Outcome.Success) loadMessages(it.data)
-    }
-
     private val newMessageObserver = Observer<Pair<Message.Action, Any>> {
         if (it.first == Message.Action.ADD) getAdapter().addMessage(it.second as Message)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        messageViewModel.getMessageHistory().observe(viewLifecycleOwner, messageHistoryObserver)
         messageViewModel.newMessage.observe(viewLifecycleOwner, newMessageObserver)
     }
 
@@ -61,33 +55,34 @@ class MessageFragment : Fragment() {
         }
     }
 
-    private fun loadMessages(messages: List<Message>) {
-        getAdapter().addMessages(messages)
-    }
-
     private fun getAdapter() = messageList.adapter as MessageAdapter
 
-    private class MessageAdapter(private val messages: ArrayList<Message> = arrayListOf()) :
-        RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
+    private class MessageAdapter : RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
 
         companion object {
             private const val VIEW_TYPE_RIGHT_ALIGN = 1001
             private const val VIEW_TYPE_LEFT_ALIGN = 2002
         }
 
-        fun addMessages(newMessages: List<Message>) {
-            messages.clear()
-            messages.addAll(newMessages)
-            notifyDataSetChanged()
+        private val messages = LinkedHashMap<String, Message>()
+        private lateinit var recyclerView: RecyclerView
+
+        override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+            super.onAttachedToRecyclerView(recyclerView)
+            this.recyclerView = recyclerView
         }
 
         fun addMessage(newMessage: Message) {
-            messages.add(newMessage)
-            notifyItemInserted(messages.size - 1)
+            if (!messages.containsKey(newMessage.id)){
+                messages[newMessage.id!!] = newMessage
+                val position = messages.values.size - 1
+                notifyItemInserted(position)
+                recyclerView.scrollToPosition(position)
+            }
         }
 
         override fun getItemViewType(position: Int): Int {
-            val message = messages[position]
+            val message = messages.values.toList()[position]
             return if (message.align == Paint.Align.LEFT) VIEW_TYPE_LEFT_ALIGN
             else VIEW_TYPE_RIGHT_ALIGN
         }
@@ -99,9 +94,9 @@ class MessageFragment : Fragment() {
             }
 
         override fun onBindViewHolder(holder: MessageViewHolder, position: Int) =
-            holder.bindMessage(messages[position])
+            holder.bindMessage(messages.values.toList()[position])
 
-        override fun getItemCount(): Int = messages.size
+        override fun getItemCount(): Int = messages.values.size
 
         abstract class MessageViewHolder(v: View) : RecyclerView.ViewHolder(v) {
             abstract fun bindMessage(message: Message)

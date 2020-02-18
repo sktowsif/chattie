@@ -67,7 +67,7 @@ class MessageActivity : AppCompatActivity() {
         if (savedInstanceState == null) addFragment(R.id.container, MessageFragment::class.java)
 
         messageViewModel.receiverContactDetail.observe(this, receiverContactObserver)
-        messageViewModel.fetchContact(receiverId)
+        messageViewModel.fetchReceiverContactDetail(receiverId)
         messageViewModel.findConversation(receiverId)
 
     }

@@ -34,7 +34,7 @@ class HomeFragment : Fragment() {
 
         TabLayoutMediator(homeTabs, homePager) { tab, position ->
             tab.text = getString(tabs[position].labelResId)
-        }
+        }.attach()
     }
 
     private class ChatPagerAdapter(fragment: Fragment, private val tabs: List<Tab>) :

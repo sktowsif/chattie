@@ -6,8 +6,7 @@ import com.project.chattie.data.UserRepository
 import com.project.chattie.ui.contacts.ContactsActivity
 import com.project.chattie.ui.contacts.ContactsFragment
 import com.project.chattie.ui.contacts.ContactsViewModel
-import com.project.chattie.ui.dashboard.DashboardActivity
-import com.project.chattie.ui.dashboard.HomeFragment
+import com.project.chattie.ui.dashboard.*
 import com.project.chattie.ui.login.LoginActivity
 import com.project.chattie.ui.login.LoginFragment
 import com.project.chattie.ui.login.LoginViewModel
@@ -23,6 +22,7 @@ val firebaseModule = module {
 val dataSourceModule = module {
     single { UserRepository(get(), get()) } bind UserDataSource::class
     single { MessageRepository(get(), get()) } bind MessageDataSource::class
+    single { ChatRepository(get(), get()) } bind ChatDataSource::class
 }
 
 val uiModule = module {
@@ -32,8 +32,10 @@ val uiModule = module {
         scoped { LoginFragment() }
     }
 
+    viewModel { DashboardViewModel(get()) }
     scope<DashboardActivity> {
         scoped { HomeFragment() }
+        scoped { ChatsFragment() }
     }
 
     viewModel { ContactsViewModel(get()) }
@@ -43,6 +45,10 @@ val uiModule = module {
 
     viewModel { MessageViewModel(get(), get(), get()) }
     scope<MessageActivity> {
+        scoped { MessageFragment() }
+    }
+
+    scope<ChatActivity> {
         scoped { MessageFragment() }
     }
 }

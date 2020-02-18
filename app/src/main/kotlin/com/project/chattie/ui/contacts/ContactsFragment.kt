@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import coil.api.load
-import coil.size.Scale
 import coil.transform.CircleCropTransformation
 import com.project.chattie.R
 import com.project.chattie.data.Outcome
@@ -58,7 +57,7 @@ class ContactsFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        commonList.apply {
+        swipeRefreshList.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
             adapter = ContactAdapter { onContactSelected(it) }
@@ -82,7 +81,7 @@ class ContactsFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
         getAdapter().addContacts(contacts)
     }
 
-    private fun getAdapter() = commonList.adapter as ContactAdapter
+    private fun getAdapter() = swipeRefreshList.adapter as ContactAdapter
 
     private class ContactAdapter(
         private val contacts: ArrayList<User> = arrayListOf(),

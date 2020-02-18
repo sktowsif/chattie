@@ -21,24 +21,17 @@ import org.jetbrains.anko.warn
 
 interface MessageDataSource {
 
-    /**
-     * Find the chat id based on sender and receiver id, or create a
-     * new id if does not exists.
-     */
-    suspend fun findConversationId(senderId: String, receiverId: String): String
+    suspend fun findConversationId(senderId: String, receiverId: String)
 
-    suspend fun fetchMessages(chatId: String): List<Message>
+    suspend fun sendMessage(receiverName: String, receiverId: String, message: Message)
 
-    /**
-     * Attach a listener to particular chat id node.
-     */
     fun attachMessageListener()
 
     fun removeMessageListener()
 
-    fun getMessage(): LiveData<Pair<Message.Action, Any>>
+    fun setConversationId(chatId: String)
 
-    suspend fun sendMessage(receiverName: String, receiverId: String, message: Message)
+    fun messageChannel(): LiveData<Pair<Message.Action, Any>>
 }
 
 class MessageRepository(
@@ -47,12 +40,11 @@ class MessageRepository(
 ) : MessageDataSource, AnkoLogger {
 
     private var isListenerAttached = false
-
     private lateinit var chatId: String
 
     private val messageNode = MutableLiveData<Pair<Message.Action, Any>>()
 
-    override fun getMessage(): LiveData<Pair<Message.Action, Any>> = messageNode
+    override fun messageChannel(): LiveData<Pair<Message.Action, Any>> = messageNode
 
     private val messageChildEventListener = object : ChildEventListener {
         override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
@@ -66,8 +58,8 @@ class MessageRepository(
 
         override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
             info { "onChildChanged: ${snapshot.key}" }
-            val newMessage = snapshot.getValue(Message::class.java)
-            messageNode.value = Message.Action.CHANGE to newMessage!!
+            //val newMessage = snapshot.getValue(Message::class.java)
+            //messageNode.value = Message.Action.CHANGE to newMessage!!
         }
 
         override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
@@ -84,7 +76,11 @@ class MessageRepository(
         }
     }
 
-    override suspend fun findConversationId(senderId: String, receiverId: String): String {
+    override fun setConversationId(chatId: String) {
+        this.chatId = chatId
+    }
+
+    override suspend fun findConversationId(senderId: String, receiverId: String) {
         val queryParam = createQueryParam(senderId, receiverId)
         // Get all entries from members table
         val response = database.members().readList<Member>()
@@ -97,33 +93,14 @@ class MessageRepository(
         }
         val result = combinations.firstOrNull { it.second == queryParam }
 
-        chatId = if (!result?.first.isNullOrEmpty()) {
-            info { "Chat id found: ${result!!.first}" }
-            result!!.first!!
-        } else {
-            val id = database.members().push().key!!
-            info { "No existing chat found, creating new id: $id" }
-            id
-        }
-
-        return chatId
-
+        val chatId = if (!result?.first.isNullOrEmpty()) result!!.first!!
+        else database.members().push().key!!
+        setConversationId(chatId)
     }
 
     // Create a generic id based on sender and receiver id
     private fun createQueryParam(senderId: String, receiverId: String) =
         if (senderId > receiverId) senderId + receiverId else receiverId + senderId
-
-    override suspend fun fetchMessages(chatId: String): List<Message> {
-        val uid = SessionManager.getUserUid(application)
-        val messages = database.messages(chatId).readList<Message>()
-        messages.forEach {
-            if (it.senderId == uid) it.align = Paint.Align.RIGHT
-            else it.align = Paint.Align.LEFT
-        }
-        return messages
-    }
-
 
     override fun attachMessageListener() {
         // Taking extra care of adding listener only once
@@ -144,9 +121,9 @@ class MessageRepository(
         }
     }
 
-    override suspend fun sendMessage(receiverName: String, receiverId: String, message: Message) {
+    override suspend fun sendMessage(rName: String, receiverId: String, message: Message) {
         val senderId = SessionManager.getUserUid(application)
-        val senderName = SessionManager.getUsername(application)
+        //val sName = SessionManager.getUsername(application)
         message.id = database.messages().push().key!!
 
         // Update the member node about the user involved in this chat node
@@ -169,7 +146,6 @@ class MessageRepository(
         // Update the chat node with last message
         val chat = chatEntity {
             id = chatId
-            title = "$senderName|$receiverName"
             lastMessage = message.message
             timestamp = message.timestamp
         }

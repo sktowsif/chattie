@@ -5,15 +5,17 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import com.project.chattie.R
+import com.project.chattie.data.Chat
 import com.project.chattie.ext.addFragment
 import com.project.chattie.services.StatusWorker
 import com.project.chattie.ui.contacts.ContactsActivity
+import com.project.chattie.ui.message.MessageActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.startActivity
 import org.koin.androidx.fragment.android.setupKoinFragmentFactory
 import org.koin.androidx.scope.lifecycleScope
 
-class DashboardActivity : AppCompatActivity() {
+class DashboardActivity : AppCompatActivity(), ChatsFragment.OnChatSelectedListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setupKoinFragmentFactory(lifecycleScope)
@@ -42,5 +44,9 @@ class DashboardActivity : AppCompatActivity() {
             R.id.action_search -> true
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onChatSelected(chat: Chat) {
+        //startActivity(MessageActivity.create(this,))
     }
 }

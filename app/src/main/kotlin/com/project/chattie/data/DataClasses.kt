@@ -39,16 +39,25 @@ data class Member(
 @IgnoreExtraProperties
 data class Chat(
     var id: String? = "",
-    var title: String? = "",
     var lastMessage: String? = "",
     var timestamp: Long = Date().time
-)
+) {
+
+    @get:Exclude
+    @set:Exclude
+    var title: String? = null
+
+    @get:Exclude
+    @set:Exclude
+    var imageUrl: String? = null
+
+}
 
 @IgnoreExtraProperties
 data class Message(
     var id: String? = "",
-    var message: String? = "",
     var name: String? = "",
+    var message: String? = "",
     var senderId: String? = "",
     var timestamp: Long = Date().time
 ) {
