@@ -4,6 +4,7 @@
     <string name="title_select_contacts">Select contact</string>
     <string name="title_chats">Chats</string>
 
+    <string name="action_block">Block</string>
     <string name="action_search">Search</string>
     <string name="action_settings">Settings</string>
     <string name="action_chats">Chats</string>

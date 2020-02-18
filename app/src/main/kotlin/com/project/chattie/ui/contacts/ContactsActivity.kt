@@ -58,7 +58,7 @@ class ContactsActivity : AppCompatActivity(), ContactsFragment.OnContactSelected
     }
 
     override fun onContactSelected(user: User) {
-        startActivity(MessageActivity.create(this, user))
+        startActivity(MessageActivity.findMessage(this, user.uid!!))
         finish()
     }
 }

@@ -51,6 +51,10 @@ data class Chat(
     @set:Exclude
     var imageUrl: String? = null
 
+    @get:Exclude
+    @set:Exclude
+    var uid: String? = null
+
 }
 
 @IgnoreExtraProperties

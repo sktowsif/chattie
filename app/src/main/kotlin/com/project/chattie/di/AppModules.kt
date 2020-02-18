@@ -47,8 +47,4 @@ val uiModule = module {
     scope<MessageActivity> {
         scoped { MessageFragment() }
     }
-
-    scope<ChatActivity> {
-        scoped { MessageFragment() }
-    }
 }

@@ -36,6 +36,7 @@ class ChatRepository(
         val contact = database.users(contactId).readValue<User>()
         chat.title = contact.name
         chat.imageUrl = contact.imageUrl
+        chat.uid = contactId
         return chat
     }
 

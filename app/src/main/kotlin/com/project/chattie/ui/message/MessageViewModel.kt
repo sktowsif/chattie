@@ -2,7 +2,6 @@ package com.project.chattie.ui.message
 
 import android.app.Application
 import androidx.lifecycle.*
-import com.project.chattie.data.Message
 import com.project.chattie.data.Outcome
 import com.project.chattie.data.User
 import com.project.chattie.data.UserDataSource
@@ -66,10 +65,10 @@ class MessageViewModel(
         }
     }
 
-//    fun attachListener(chatId: String) {
-//        messageRepo.setConversationId(chatId)
-//        messageRepo.attachMessageListener()
-//    }
+    fun attachMessageNodeListener(chatId: String) {
+        messageRepo.setConversationId(chatId)
+        messageRepo.attachMessageListener()
+    }
 
     val newMessage = messageRepo.messageChannel()
 

@@ -2,9 +2,7 @@ package com.project.chattie.ui.message
 
 import android.graphics.Paint
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -25,6 +23,11 @@ class MessageFragment : Fragment() {
 
     private val newMessageObserver = Observer<Pair<Message.Action, Any>> {
         if (it.first == Message.Action.ADD) getAdapter().addMessage(it.second as Message)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -55,6 +58,10 @@ class MessageFragment : Fragment() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.fragment_menu_message, menu)
+    }
+
     private fun getAdapter() = messageList.adapter as MessageAdapter
 
     private class MessageAdapter : RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
@@ -73,7 +80,7 @@ class MessageFragment : Fragment() {
         }
 
         fun addMessage(newMessage: Message) {
-            if (!messages.containsKey(newMessage.id)){
+            if (!messages.containsKey(newMessage.id)) {
                 messages[newMessage.id!!] = newMessage
                 val position = messages.values.size - 1
                 notifyItemInserted(position)

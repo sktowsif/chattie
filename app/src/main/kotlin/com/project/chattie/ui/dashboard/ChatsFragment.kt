@@ -14,11 +14,14 @@ import coil.transform.CircleCropTransformation
 import com.project.chattie.R
 import com.project.chattie.data.Chat
 import com.project.chattie.data.Outcome
+import com.project.chattie.ext.gone
 import com.project.chattie.ext.inflate
+import com.project.chattie.ext.show
 import com.project.chattie.ext.toPattern
 import com.project.chattie.ui.login.SessionManager
 import kotlinx.android.synthetic.main.common_list.*
 import kotlinx.android.synthetic.main.item_chat.view.*
+import org.jetbrains.anko.support.v4.toast
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 
 class ChatsFragment : Fragment() {
@@ -31,12 +34,21 @@ class ChatsFragment : Fragment() {
     private val dashboardViewModel: DashboardViewModel by sharedViewModel()
 
     private val chatObserver = Observer<Outcome<List<Chat>>> {
-        if (it is Outcome.Success) loadChats(it.data)
+        when (it) {
+            is Outcome.Progress -> isProcessing(it.loading)
+            is Outcome.Failure -> toast(R.string.err_something_wrong)
+            is Outcome.Success -> loadChats(it.data)
+        }
+    }
+
+    private fun isProcessing(isLoading: Boolean) {
+        if (isLoading) commonListProgress.show()
+        else commonListProgress.gone()
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is OnChatSelectedListener) listener = null
+        if (context is OnChatSelectedListener) listener = context
         else throw RuntimeException("$context must implement OnChatSelectedListener")
     }
 

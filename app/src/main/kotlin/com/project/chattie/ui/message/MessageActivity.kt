@@ -26,10 +26,18 @@ class MessageActivity : AppCompatActivity() {
 
     companion object {
 
-        private const val EXTRA_USER_UID = "user_uid"
+        private const val EXTRA_CHAT_UID = "chat_id"
+        private const val EXTRA_CONNECTED_UID = "user_uid"
 
-        fun create(context: Context, user: User) =
-            context.intentFor<MessageActivity>(EXTRA_USER_UID to user.uid)
+        fun findMessage(context: Context, uid: String) =
+            context.intentFor<MessageActivity>(EXTRA_CONNECTED_UID to uid)
+
+        fun openChat(context: Context, chatId: String, uid: String) =
+            context.intentFor<MessageActivity>(
+                EXTRA_CHAT_UID to chatId,
+                EXTRA_CONNECTED_UID to uid
+            )
+
     }
 
     private val messageViewModel by viewModel<MessageViewModel>()
@@ -58,17 +66,15 @@ class MessageActivity : AppCompatActivity() {
         setSupportActionBar(find(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        //val senderId = SessionManager.getUserUid(this)
-        val receiverId = intent.getStringExtra(EXTRA_USER_UID)!!
-
-        setSupportActionBar(find(R.id.toolbar))
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
         if (savedInstanceState == null) addFragment(R.id.container, MessageFragment::class.java)
-
         messageViewModel.receiverContactDetail.observe(this, receiverContactObserver)
-        messageViewModel.fetchReceiverContactDetail(receiverId)
-        messageViewModel.findConversation(receiverId)
+
+        val connectedUid = intent.getStringExtra(EXTRA_CONNECTED_UID)!!
+        messageViewModel.fetchReceiverContactDetail(connectedUid)
+
+        val chatId = intent.getStringExtra(EXTRA_CHAT_UID)
+        if (chatId.isNullOrEmpty()) messageViewModel.findConversation(connectedUid)
+        else messageViewModel.attachMessageNodeListener(chatId)
 
     }
 

@@ -47,6 +47,6 @@ class DashboardActivity : AppCompatActivity(), ChatsFragment.OnChatSelectedListe
     }
 
     override fun onChatSelected(chat: Chat) {
-        //startActivity(MessageActivity.create(this,))
+        startActivity(MessageActivity.openChat(this, chat.id!!, chat.uid!!))
     }
 }
