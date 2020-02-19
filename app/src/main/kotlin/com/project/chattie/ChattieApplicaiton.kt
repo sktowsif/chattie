@@ -36,7 +36,7 @@ class ChattieApplicaiton : Application(), Application.ActivityLifecycleCallbacks
 
     override fun onActivityStarted(activity: Activity) {
         if (totalActiveActivities == 0) {
-            toast("App in foreground")
+            //toast("App in foreground")
             if (SessionManager.isLoggedIn(this))
                 StatusWorker.enqueue(this, true)
         }
@@ -46,7 +46,7 @@ class ChattieApplicaiton : Application(), Application.ActivityLifecycleCallbacks
     override fun onActivityStopped(activity: Activity) {
         totalActiveActivities--
         if (totalActiveActivities == 0) {
-            toast("App in background")
+            //toast("App in background")
             if (SessionManager.isLoggedIn(this))
                 StatusWorker.enqueue(this, false)
         }
