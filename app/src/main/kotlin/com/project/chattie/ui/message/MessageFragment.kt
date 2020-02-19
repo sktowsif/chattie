@@ -8,6 +8,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.project.chattie.R
+import com.project.chattie.data.Action
 import com.project.chattie.data.Message
 import com.project.chattie.ext.inflate
 import com.project.chattie.ext.toPattern
@@ -21,9 +22,9 @@ class MessageFragment : Fragment() {
 
     private val messageViewModel: MessageViewModel by sharedViewModel()
 
-    private val newMessageObserver = Observer<Pair<Message.Action, Any>> {
-        if (it != null) {
-            if (it.first == Message.Action.ADD) getAdapter().addMessage(it.second as Message)
+    private val newMessageObserver = Observer<Pair<Action, Any>> { message ->
+        message?.run {
+            if (first == Action.ADD) getAdapter().addMessage(second as Message)
         }
     }
 

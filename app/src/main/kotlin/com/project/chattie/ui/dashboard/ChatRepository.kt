@@ -21,25 +21,23 @@ import org.jetbrains.anko.warn
 
 interface ChatDataSource {
 
-    suspend fun getChats(): List<Chat>
+    val newChatLiveData: MutableLiveData<Pair<Action, Chat>>
+
+    suspend fun getChat(id: String): Chat
 
     fun attachChatNodeListener()
 
     fun removeChatNodeListener()
-
-    fun chatChangeChannel(): LiveData<Pair<Action, Chat>>
 }
 
 class ChatRepository(
-    private val application: Application,
+    application: Application,
     private val database: FirebaseDatabase
 ) : ChatDataSource, AnkoLogger {
 
     private var isListenerActive = false
 
     private val uid = SessionManager.getUserUid(application)
-
-    private val chatNode = MutableLiveData<Pair<Action, Chat>>()
 
     private val chatListener = object : ChildEventListener {
         override fun onCancelled(error: DatabaseError) {
@@ -49,11 +47,13 @@ class ChatRepository(
         override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
 
         override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-            val updatedChat = snapshot.getValue(Chat::class.java)
+            val updatedChat = snapshot.getValue(Chat::class.java)!!
+            newChatLiveData.value = Pair(Action.CHANGE, updatedChat)
         }
 
         override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-            val newChat = snapshot.getValue(Chat::class.java)
+            val newChat = snapshot.getValue(Chat::class.java)!!
+            newChatLiveData.value = Pair(Action.ADD, newChat)
         }
 
         override fun onChildRemoved(snapshot: DataSnapshot) {
@@ -61,17 +61,11 @@ class ChatRepository(
         }
     }
 
-    override fun chatChangeChannel(): LiveData<Pair<Action, Chat>> = chatNode
+    override val newChatLiveData: MutableLiveData<Pair<Action, Chat>> = MutableLiveData()
 
-    override suspend fun getChats(): List<Chat> {
-        val uid = SessionManager.getUserUid(application)
-        val user = database.users(uid).readValue<User>()
-        return user.chats.map { it.key }.map { getChatDetail(it) }
-    }
-
-    private suspend fun getChatDetail(chatId: String): Chat {
-        val chat = database.chats(chatId).readValue<Chat>()
-        val members = database.members(chatId).readValue<Member>()
+    override suspend fun getChat(id: String): Chat {
+        val chat = database.chats(id).readValue<Chat>()
+        val members = database.members(id).readValue<Member>()
         // We set the name and image of the contact who is not the current user
         val contactId = members.members.keys.first { it != uid }
         val contact = database.users(contactId).readValue<User>()

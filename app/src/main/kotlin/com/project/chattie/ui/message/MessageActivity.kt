@@ -12,10 +12,7 @@ import coil.transform.CircleCropTransformation
 import com.project.chattie.R
 import com.project.chattie.data.Outcome
 import com.project.chattie.data.User
-import com.project.chattie.ext.addFragment
-import com.project.chattie.ext.setSpannedText
-import com.project.chattie.ext.show
-import com.project.chattie.ext.toPattern
+import com.project.chattie.ext.*
 import com.project.chattie.ui.login.SessionManager
 import kotlinx.android.synthetic.main.common_appbar.*
 import org.jetbrains.anko.find
@@ -23,6 +20,8 @@ import org.jetbrains.anko.intentFor
 import org.koin.androidx.fragment.android.setupKoinFragmentFactory
 import org.koin.androidx.scope.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 class MessageActivity : AppCompatActivity() {
 
@@ -39,7 +38,6 @@ class MessageActivity : AppCompatActivity() {
                 EXTRA_CHAT_UID to chatId,
                 EXTRA_CONNECTED_UID to uid
             )
-
     }
 
     private val messageViewModel by viewModel<MessageViewModel>()
@@ -56,14 +54,30 @@ class MessageActivity : AppCompatActivity() {
     }
 
     private val statusChangeObserver = Observer<Triple<String, Boolean, Long>> {
-        customToolbarTitle.show()
-        customToolbarTitle.setSpannedText(buildSpannedString {
-            append(it.first)
-            scale(0.5F) {
-                if (it.second) append("\n${getString(R.string.online)}")
-                else if (it.third > 0) append("\n${it.third.toPattern("hh:mm aa")}")
-            }
-        })
+        it?.run {
+            customToolbarTitle.show()
+            customToolbarTitle.setSpannedText(buildSpannedString {
+                append(it.first)
+                scale(0.5F) {
+                    if (it.second) append("\n${getString(R.string.online)}")
+                    else if (it.third > 0) append("\n${formatTime(it.third)}")
+                }
+            })
+        }
+    }
+
+    private fun formatTime(timeInMills: Long): String {
+        val lastSeenDate = Date(timeInMills).toCalendar()
+        val strLastSeen = lastSeenDate.toPattern("dd-MM-yyyy")
+        val nowDate = Calendar.getInstance()
+        val strNowDate = nowDate.toPattern("dd-MM-yyyy")
+        return if (strLastSeen == strNowDate) lastSeenDate.toPattern("hh:mm aa")
+        else {
+            val difference = nowDate.timeInMillis - lastSeenDate.timeInMillis
+            val daysBetween = TimeUnit.DAYS.convert(difference, TimeUnit.MILLISECONDS)
+            if (daysBetween > 7) lastSeenDate.toPattern("dd MMM hh:mm aa")
+            else lastSeenDate.toPattern("EEE hh:mm aa")
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

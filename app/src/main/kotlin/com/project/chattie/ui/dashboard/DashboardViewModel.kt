@@ -2,7 +2,9 @@ package com.project.chattie.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
+import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
+import com.project.chattie.data.Action
 import com.project.chattie.data.Chat
 import com.project.chattie.data.Outcome
 import com.project.chattie.ext.emitFailure
@@ -12,19 +14,19 @@ import kotlinx.coroutines.Dispatchers
 
 class DashboardViewModel(private val chatRepo: ChatDataSource) : ViewModel() {
 
-//    val chats =
-//        liveData<Outcome<List<Chat>>>(context = viewModelScope.coroutineContext + Dispatchers.IO) {
-//            emitLoading()
-//            try {
-//                emitSuccess(chatRepo.getChats())
-//            } catch (ex: Exception) {
-//                ex.printStackTrace()
-//                emitFailure(ex)
-//            }
-//        }
-
     init {
         chatRepo.attachChatNodeListener()
+    }
+
+    fun newChat() = chatRepo.newChatLiveData.switchMap {
+        liveData(context = viewModelScope.coroutineContext + Dispatchers.IO) {
+            try {
+                val result = chatRepo.getChat(it.second.id!!)
+                emit(Pair(it.first, result))
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
+        }
     }
 
     override fun onCleared() {

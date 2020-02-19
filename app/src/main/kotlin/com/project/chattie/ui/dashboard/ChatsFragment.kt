@@ -12,16 +12,12 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.api.load
 import coil.transform.CircleCropTransformation
 import com.project.chattie.R
+import com.project.chattie.data.Action
 import com.project.chattie.data.Chat
-import com.project.chattie.data.Outcome
-import com.project.chattie.ext.gone
 import com.project.chattie.ext.inflate
-import com.project.chattie.ext.show
 import com.project.chattie.ext.toPattern
-import com.project.chattie.ui.login.SessionManager
 import kotlinx.android.synthetic.main.common_list.*
 import kotlinx.android.synthetic.main.item_chat.view.*
-import org.jetbrains.anko.support.v4.toast
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 
 class ChatsFragment : Fragment() {
@@ -33,17 +29,11 @@ class ChatsFragment : Fragment() {
     private var listener: OnChatSelectedListener? = null
     private val dashboardViewModel: DashboardViewModel by sharedViewModel()
 
-    private val chatObserver = Observer<Outcome<List<Chat>>> {
-        when (it) {
-            is Outcome.Progress -> isProcessing(it.loading)
-            is Outcome.Failure -> toast(R.string.err_something_wrong)
-            is Outcome.Success -> loadChats(it.data)
+    private val chatObserver = Observer<Pair<Action, Chat>> { chat ->
+        chat?.run {
+            if (first == Action.ADD) getAdapter().addChat(second)
+            else if (first == Action.CHANGE) getAdapter().updateChat(second)
         }
-    }
-
-    private fun isProcessing(isLoading: Boolean) {
-        if (isLoading) commonListProgress.show()
-        else commonListProgress.gone()
     }
 
     override fun onAttach(context: Context) {
@@ -54,7 +44,7 @@ class ChatsFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        dashboardViewModel.chats.observe(viewLifecycleOwner, chatObserver)
+        dashboardViewModel.newChat().observe(viewLifecycleOwner, chatObserver)
     }
 
     override fun onCreateView(
@@ -70,7 +60,7 @@ class ChatsFragment : Fragment() {
 
         commonList.apply {
             setHasFixedSize(true)
-            adapter = ChatAdapter(context!!) { onChatSelected(it) }
+            adapter = ChatAdapter { onChatSelected(it) }
             layoutManager = LinearLayoutManager(context)
         }
     }
@@ -84,33 +74,45 @@ class ChatsFragment : Fragment() {
         listener?.onChatSelected(chat)
     }
 
-    private fun loadChats(chats: List<Chat>) {
-        getAdapter().addChats(chats)
-    }
+//    private fun loadChats(chats: List<Chat>) {
+//        getAdapter().addChats(chats)
+//    }
 
     private fun getAdapter() = commonList.adapter as ChatAdapter
 
     private class ChatAdapter(
-        context: Context,
-        private val chats: ArrayList<Chat> = arrayListOf(),
+        private val chats: LinkedHashMap<String, Chat> = linkedMapOf(),
         private val itemClick: (Chat) -> Unit
     ) : RecyclerView.Adapter<ChatAdapter.ViewHolder>() {
 
-        private val senderName = SessionManager.getUsername(context)
+        fun addChat(newChat: Chat) {
+            if (!chats.containsKey(newChat.id)) {
+                chats[newChat.id!!] = newChat
+                val position = chats.values.size - 1
+                if (chats.size > 1) notifyItemInserted(position)
+                else notifyDataSetChanged()
+            }
+        }
 
-        fun addChats(newChats: List<Chat>) {
-            chats.clear()
-            chats.addAll(newChats)
-            notifyDataSetChanged()
+        fun updateChat(oldChat: Chat) {
+            val index = chats.values.indexOfFirst { it.id!! == oldChat.id!! }
+            if (index >= 0) {
+                chats[oldChat.id!!] = oldChat
+                notifyItemChanged(index)
+            }
+        }
+
+        fun removeChat(oldChat: Chat) {
+
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
             ViewHolder(parent.inflate(R.layout.item_chat), itemClick)
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) =
-            holder.bindChat(chats[position])
+            holder.bindChat(chats.values.toList()[position])
 
-        override fun getItemCount(): Int = chats.size
+        override fun getItemCount(): Int = chats.values.size
 
         inner class ViewHolder(v: View, private val itemClick: (Chat) -> Unit) :
             RecyclerView.ViewHolder(v) {
