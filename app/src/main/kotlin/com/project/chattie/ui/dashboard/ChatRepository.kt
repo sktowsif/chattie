@@ -11,10 +11,7 @@ import com.project.chattie.data.Action
 import com.project.chattie.data.Chat
 import com.project.chattie.data.Member
 import com.project.chattie.data.User
-import com.project.chattie.ext.chats
-import com.project.chattie.ext.members
-import com.project.chattie.ext.readValue
-import com.project.chattie.ext.users
+import com.project.chattie.ext.*
 import com.project.chattie.ui.login.SessionManager
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.warn
@@ -24,6 +21,8 @@ interface ChatDataSource {
     val newChatLiveData: MutableLiveData<Pair<Action, Chat>>
 
     suspend fun getChat(id: String): Chat
+
+    suspend fun getChats(): List<Chat>
 
     fun attachChatNodeListener()
 
@@ -38,6 +37,7 @@ class ChatRepository(
     private var isListenerActive = false
 
     private val uid = SessionManager.getUserUid(application)
+    private val role = SessionManager.getUserRole(application)
 
     private val chatListener = object : ChildEventListener {
         override fun onCancelled(error: DatabaseError) {
@@ -74,6 +74,8 @@ class ChatRepository(
         chat.uid = contactId
         return chat
     }
+
+    override suspend fun getChats(): List<Chat> = database.chats().readList()
 
     override fun attachChatNodeListener() {
         if (!isListenerActive) {

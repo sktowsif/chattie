@@ -11,6 +11,7 @@ import com.project.chattie.data.Message
 import com.project.chattie.data.User
 import com.project.chattie.ext.*
 import com.project.chattie.ui.login.SessionManager
+import com.project.chattie.util.DateTimeManager
 import kotlinx.coroutines.tasks.await
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
@@ -22,6 +23,10 @@ interface MessageDataSource {
 
     suspend fun sendMessage(receiverName: String, receiverId: String, message: Message)
 
+    suspend fun getMessageDetail(chatId: String): Pair<List<User>, List<Message>>
+
+    suspend fun onEditMessage(chatId: String, messageId: String, newMessage: String): String
+
     fun attachMessageListener(uid: String)
 
     fun removeMessageListener(uid: String)
@@ -31,6 +36,8 @@ interface MessageDataSource {
     fun messageChannel(): LiveData<Pair<Action, Any>>
 
     fun statusChangeChannel(): LiveData<Triple<String, Boolean, Long>>
+
+
 }
 
 class MessageRepository(
@@ -52,6 +59,7 @@ class MessageRepository(
             val newMessage = snapshot.getValue(Message::class.java)!!
             if (newMessage.senderId == senderId) newMessage.align = Paint.Align.RIGHT
             else newMessage.align = Paint.Align.LEFT
+            newMessage.strDateTime = DateTimeManager.formatTime(newMessage.timestamp)
             messageNode.value = Action.ADD to newMessage
         }
 
@@ -174,4 +182,28 @@ class MessageRepository(
         }
         database.chats(chatId).setValue(chat).await()
     }
+
+    override suspend fun getMessageDetail(chatId: String): Pair<List<User>, List<Message>> {
+        val messages = database.messages(chatId).readList<Message>()
+        val members = database.members(chatId).readValue<Member>()
+        val users = members.members.map { database.users(it.key).readValue<User>() }
+        messages.forEach {
+            it.strDateTime = DateTimeManager.formatTime(it.timestamp)
+            if (it.name == users.first().name) it.align = Paint.Align.LEFT
+            else it.align = Paint.Align.RIGHT
+        }
+        return Pair(users, messages.sortedBy { it.timestamp })
+    }
+
+    override suspend fun onEditMessage(
+        chatId: String,
+        messageId: String,
+        newMessage: String
+    ): String {
+        database.messages(chatId).child(messageId)
+            .updateChildren(mapOf(Message.MESSAGE to newMessage))
+            .await()
+        return newMessage
+    }
+
 }

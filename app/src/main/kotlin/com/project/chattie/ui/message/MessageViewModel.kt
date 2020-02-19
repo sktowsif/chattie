@@ -2,13 +2,11 @@ package com.project.chattie.ui.message
 
 import android.app.Application
 import androidx.lifecycle.*
+import com.project.chattie.data.Message
 import com.project.chattie.data.Outcome
 import com.project.chattie.data.User
 import com.project.chattie.data.UserDataSource
-import com.project.chattie.ext.emitFailure
-import com.project.chattie.ext.emitLoading
-import com.project.chattie.ext.emitSuccess
-import com.project.chattie.ext.messageEntity
+import com.project.chattie.ext.*
 import com.project.chattie.ui.login.SessionManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -68,6 +66,43 @@ class MessageViewModel(
     fun attachMessageNodeListener(chatId: String, receiverId: String) {
         messageRepo.setConversationId(chatId)
         messageRepo.attachMessageListener(receiverId)
+    }
+
+    private val _chatId = MutableLiveData<String>()
+
+    val messages = _chatId.switchMap {
+        liveData<Outcome<Pair<List<User>, List<Message>>>>(context = viewModelScope.coroutineContext + Dispatchers.IO) {
+            emitLoading()
+            try {
+                emitSuccess(messageRepo.getMessageDetail(it))
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                emitFailure(ex)
+            }
+        }
+    }
+
+    fun fetchMessages(chatId: String) {
+        _chatId.value = chatId
+    }
+
+    private val _updatedMessage = MutableLiveData<Outcome<Pair<String, String>>>()
+
+    fun onMessageUpdate() = _updatedMessage
+
+    fun onEditMessage(chatId: String, messageId: String, newMessage: String) {
+        viewModelScope.launch {
+            _updatedMessage.loading()
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    messageRepo.onEditMessage(chatId, messageId, newMessage)
+                }
+                _updatedMessage.success(Pair(messageId, result))
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                _updatedMessage.failure(ex)
+            }
+        }
     }
 
     val statusChange = messageRepo.statusChangeChannel()

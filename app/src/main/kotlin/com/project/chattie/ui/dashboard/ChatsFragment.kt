@@ -14,8 +14,11 @@ import coil.transform.CircleCropTransformation
 import com.project.chattie.R
 import com.project.chattie.data.Action
 import com.project.chattie.data.Chat
+import com.project.chattie.data.Role
+import com.project.chattie.ext.gone
 import com.project.chattie.ext.inflate
 import com.project.chattie.ext.toPattern
+import com.project.chattie.ui.login.SessionManager
 import kotlinx.android.synthetic.main.common_list.*
 import kotlinx.android.synthetic.main.item_chat.view.*
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
@@ -60,7 +63,7 @@ class ChatsFragment : Fragment() {
 
         commonList.apply {
             setHasFixedSize(true)
-            adapter = ChatAdapter { onChatSelected(it) }
+            adapter = ChatAdapter(context!!) { onChatSelected(it) }
             layoutManager = LinearLayoutManager(context)
         }
     }
@@ -74,16 +77,15 @@ class ChatsFragment : Fragment() {
         listener?.onChatSelected(chat)
     }
 
-//    private fun loadChats(chats: List<Chat>) {
-//        getAdapter().addChats(chats)
-//    }
-
     private fun getAdapter() = commonList.adapter as ChatAdapter
 
     private class ChatAdapter(
+        context: Context,
         private val chats: LinkedHashMap<String, Chat> = linkedMapOf(),
         private val itemClick: (Chat) -> Unit
     ) : RecyclerView.Adapter<ChatAdapter.ViewHolder>() {
+
+        private val userRole = SessionManager.getUserRole(context)
 
         fun addChat(newChat: Chat) {
             if (!chats.containsKey(newChat.id)) {
@@ -102,10 +104,6 @@ class ChatsFragment : Fragment() {
             }
         }
 
-        fun removeChat(oldChat: Chat) {
-
-        }
-
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
             ViewHolder(parent.inflate(R.layout.item_chat), itemClick)
 
@@ -118,15 +116,22 @@ class ChatsFragment : Fragment() {
             RecyclerView.ViewHolder(v) {
 
             fun bindChat(chat: Chat) {
-                itemView.chatTime.text = chat.timestamp.toPattern("hh:mm aa")
-                itemView.chatTitle.text = chat.title
-                itemView.chatMessage.text = chat.lastMessage
+                if (userRole == Role.ADMIN) {
+                    itemView.chatTime.text = chat.timestamp.toPattern("hh:mm aa")
+                    itemView.chatTitle.text = "Chat ${adapterPosition + 1}"
+                    itemView.chatMessage.text = chat.lastMessage
+                    itemView.chatAvatar.gone()
+                } else {
+                    itemView.chatTime.text = chat.timestamp.toPattern("hh:mm aa")
+                    itemView.chatTitle.text = chat.title
+                    itemView.chatMessage.text = chat.lastMessage
 
-                itemView.chatAvatar.load(chat.imageUrl) {
-                    crossfade(true)
-                    placeholder(R.drawable.ic_account_circle_grey_500_48dp)
-                    error(R.drawable.ic_account_circle_grey_500_48dp)
-                    transformations(CircleCropTransformation())
+                    itemView.chatAvatar.load(chat.imageUrl) {
+                        crossfade(true)
+                        placeholder(R.drawable.ic_account_circle_grey_500_48dp)
+                        error(R.drawable.ic_account_circle_grey_500_48dp)
+                        transformations(CircleCropTransformation())
+                    }
                 }
 
                 itemView.setOnClickListener { itemClick(chat) }

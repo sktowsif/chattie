@@ -66,9 +66,17 @@ data class Message(
     var timestamp: Long = Date().time
 ) {
 
+    companion object {
+        const val MESSAGE = "message"
+    }
+
     @set:Exclude
     @get:Exclude
     var align: Paint.Align = Paint.Align.LEFT
+
+    @set:Exclude
+    @get:Exclude
+    var strDateTime: String? = null
 }
 
 enum class Action {

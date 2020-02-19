@@ -4,19 +4,25 @@ import android.content.Context
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.core.text.buildSpannedString
 import androidx.core.text.scale
 import androidx.lifecycle.Observer
 import coil.api.load
 import coil.transform.CircleCropTransformation
 import com.project.chattie.R
+import com.project.chattie.data.Message
 import com.project.chattie.data.Outcome
+import com.project.chattie.data.Role
 import com.project.chattie.data.User
 import com.project.chattie.ext.*
 import com.project.chattie.ui.login.SessionManager
+import com.project.chattie.ui.message.MessageFragment.Companion.BUNDLE_CHAT_ID
 import kotlinx.android.synthetic.main.common_appbar.*
+import kotlinx.android.synthetic.main.common_container.*
 import org.jetbrains.anko.find
 import org.jetbrains.anko.intentFor
+import org.jetbrains.anko.toast
 import org.koin.androidx.fragment.android.setupKoinFragmentFactory
 import org.koin.androidx.scope.lifecycleScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -33,7 +39,7 @@ class MessageActivity : AppCompatActivity() {
         fun findMessage(context: Context, uid: String) =
             context.intentFor<MessageActivity>(EXTRA_CONNECTED_UID to uid)
 
-        fun openChat(context: Context, chatId: String, uid: String) =
+        fun openChat(context: Context, chatId: String, uid: String? = null) =
             context.intentFor<MessageActivity>(
                 EXTRA_CHAT_UID to chatId,
                 EXTRA_CONNECTED_UID to uid
@@ -80,6 +86,31 @@ class MessageActivity : AppCompatActivity() {
         }
     }
 
+    private val messageObserver = Observer<Outcome<Pair<List<User>, List<Message>>>> { outcome ->
+        when (outcome) {
+            is Outcome.Success -> {
+                customToolbarTitle.show()
+                customToolbarTitle.setSpannedText(buildSpannedString {
+                    append(outcome.data.first.map { it.name }.joinToString(" & "))
+                })
+            }
+            is Outcome.Progress -> isProcessing(outcome.loading)
+            is Outcome.Failure -> toast(R.string.err_something_wrong)
+        }
+    }
+
+    private val updateMessageObserver = Observer<Outcome<Pair<String, String>>> {
+        when (it) {
+            is Outcome.Progress -> isProcessing(it.loading)
+            is Outcome.Failure -> toast(R.string.err_something_wrong)
+        }
+    }
+
+    private fun isProcessing(isLoading: Boolean) {
+        if (isLoading) progressBar.show()
+        else progressBar.gone()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         setupKoinFragmentFactory(lifecycleScope)
         super.onCreate(savedInstanceState)
@@ -88,17 +119,29 @@ class MessageActivity : AppCompatActivity() {
         setSupportActionBar(find(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        if (savedInstanceState == null) addFragment(R.id.container, MessageFragment::class.java)
-        messageViewModel.receiverContactDetail.observe(this, receiverContactObserver)
-        messageViewModel.statusChange.observe(this, statusChangeObserver)
-
-        val connectedUid = intent.getStringExtra(EXTRA_CONNECTED_UID)!!
-        messageViewModel.fetchReceiverContactDetail(connectedUid)
-
+        val userRole = SessionManager.getUserRole(this)
         val chatId = intent.getStringExtra(EXTRA_CHAT_UID)
-        if (chatId.isNullOrEmpty()) messageViewModel.findConversation(connectedUid)
-        else messageViewModel.attachMessageNodeListener(chatId, connectedUid)
 
+        if (savedInstanceState == null) addFragment(
+            R.id.container,
+            MessageFragment::class.java,
+            args = bundleOf(BUNDLE_CHAT_ID to chatId)
+        )
+
+        if (userRole == Role.ADMIN) {
+            messageViewModel.fetchMessages(chatId)
+            messageViewModel.messages.observe(this, messageObserver)
+            messageViewModel.onMessageUpdate().observe(this, updateMessageObserver)
+        } else {
+            messageViewModel.receiverContactDetail.observe(this, receiverContactObserver)
+            messageViewModel.statusChange.observe(this, statusChangeObserver)
+
+            val connectedUid = intent.getStringExtra(EXTRA_CONNECTED_UID)!!
+            messageViewModel.fetchReceiverContactDetail(connectedUid)
+
+            if (chatId.isNullOrEmpty()) messageViewModel.findConversation(connectedUid)
+            else messageViewModel.attachMessageNodeListener(chatId, connectedUid)
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

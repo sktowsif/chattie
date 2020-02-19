@@ -6,9 +6,11 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import com.project.chattie.R
 import com.project.chattie.data.Chat
+import com.project.chattie.data.Role
 import com.project.chattie.ext.addFragment
 import com.project.chattie.services.StatusWorker
 import com.project.chattie.ui.contacts.ContactsActivity
+import com.project.chattie.ui.login.SessionManager
 import com.project.chattie.ui.message.MessageActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.startActivity
@@ -16,6 +18,8 @@ import org.koin.androidx.fragment.android.setupKoinFragmentFactory
 import org.koin.androidx.scope.lifecycleScope
 
 class DashboardActivity : AppCompatActivity(), ChatsFragment.OnChatSelectedListener {
+
+    private val userRole by lazy { SessionManager.getUserRole(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setupKoinFragmentFactory(lifecycleScope)
@@ -47,6 +51,11 @@ class DashboardActivity : AppCompatActivity(), ChatsFragment.OnChatSelectedListe
     }
 
     override fun onChatSelected(chat: Chat) {
-        startActivity(MessageActivity.openChat(this, chat.id!!, chat.uid!!))
+        if (userRole == Role.ADMIN) {
+            startActivity(MessageActivity.openChat(this, chat.id!!))
+        } else {
+            startActivity(MessageActivity.openChat(this, chat.id!!, chat.uid))
+        }
+
     }
 }

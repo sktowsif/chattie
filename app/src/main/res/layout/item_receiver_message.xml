@@ -18,6 +18,19 @@
         android:padding="@dimen/_8sdp">
 
         <TextView
+            android:id="@+id/lblMessageReceivedBy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_3sdp"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/_13ssp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            tools:maxLines="1"
+            tools:text="@tools:sample/full_names" />
+
+
+        <TextView
             android:id="@+id/lblMessageReceived"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
